@@ -3,5 +3,8 @@
     <string name="feels_like">Feels like:</string>
     <string name="temp">+25°</string>
     <string name="max_min_temp">+25°/+20°</string>
-    <string name="forecast_for_7_days">Forecast for 7 days</string>
+    <string name="forecast_for_3_days">Forecast for 3 days</string>
+    <string name="temp_format">%+.0f°</string>
+    <string name="error">Ошибка</string>
+    <string name="max_min_temp_format">%+.0f°/%+.0f°</string>
 </resources>
