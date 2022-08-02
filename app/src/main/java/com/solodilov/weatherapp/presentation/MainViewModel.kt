@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.solodilov.weatherapp.domain.entity.CurrentForecast
+import com.solodilov.weatherapp.domain.entity.Location
 import com.solodilov.weatherapp.domain.entity.DailyForecast
 import com.solodilov.weatherapp.domain.entity.HourlyForecast
 import com.solodilov.weatherapp.domain.usecase.GetWeatherInfoUseCase
@@ -23,8 +23,8 @@ class MainViewModel @Inject constructor(
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
-    private val _currentForecast = MutableLiveData<CurrentForecast>()
-    val currentForecast: LiveData<CurrentForecast> = _currentForecast
+    private val _location = MutableLiveData<Location>()
+    val location: LiveData<Location> = _location
 
     private val _dailyForecastList = MutableLiveData<List<DailyForecast>>()
     val dailyForecastList: LiveData<List<DailyForecast>> = _dailyForecastList
@@ -43,7 +43,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(exceptionHandler) {
             _loading.value = true
             val weatherInfo =  getWeatherInfoUseCase(cityName)
-            _currentForecast.value = weatherInfo.currentForecast
+            _location.value = weatherInfo.location
             _dailyForecastList.value = weatherInfo.dailyForecastList
             _hourlyForecastList.value = getHourlyForecastSublist(weatherInfo.hourlyForecastList)
 

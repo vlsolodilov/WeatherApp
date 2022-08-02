@@ -1,7 +1,7 @@
 package com.solodilov.weatherapp.data.mapper
 
 import com.solodilov.weatherapp.data.model.WeatherInfoDto
-import com.solodilov.weatherapp.domain.entity.CurrentForecast
+import com.solodilov.weatherapp.domain.entity.Location
 import com.solodilov.weatherapp.domain.entity.DailyForecast
 import com.solodilov.weatherapp.domain.entity.HourlyForecast
 import com.solodilov.weatherapp.domain.entity.WeatherInfo
@@ -12,13 +12,9 @@ class WeatherMapper @Inject constructor() {
 
     fun mapWeatherInfoDtoToWeatherInfo(weatherInfoDto: WeatherInfoDto): WeatherInfo =
         WeatherInfo(
-            currentForecast = CurrentForecast(
+            location = Location(
                 cityName = weatherInfoDto.location.name,
                 regionName = weatherInfoDto.location.region,
-                temp = weatherInfoDto.current.temp_c,
-                condition = weatherInfoDto.current.condition.text,
-                iconCondition = weatherInfoDto.current.condition.icon,
-                feelsLikeTemp = weatherInfoDto.current.feelslike_c
             ),
             dailyForecastList = mapWeatherInfoDtoToDailyForecastList(weatherInfoDto),
             hourlyForecastList = mapWeatherInfoDtoToHourlyForecastList(weatherInfoDto)
@@ -40,7 +36,9 @@ class WeatherMapper @Inject constructor() {
                 HourlyForecast(
                     time = Converter.getTime(forecastHour.time),
                     temp = forecastHour.temp_c,
-                    iconCondition = forecastHour.condition.icon
+                    condition = forecastHour.condition.text,
+                    iconCondition = forecastHour.condition.icon,
+                    feelsLikeTemp = forecastHour.feelslike_c
                 )
             }
         }

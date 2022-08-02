@@ -13,9 +13,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.solodilov.weatherapp.MainApplication
 import com.solodilov.weatherapp.R
 import com.solodilov.weatherapp.databinding.FragmentMainBinding
-import com.solodilov.weatherapp.domain.entity.CurrentForecast
+import com.solodilov.weatherapp.domain.entity.Location
 import com.solodilov.weatherapp.presentation.MainViewModel
 import com.solodilov.weatherapp.Converter.getTemperature
+import com.solodilov.weatherapp.domain.entity.HourlyForecast
 import com.solodilov.weatherapp.ui.adapter.DailyForecastAdapter
 import com.solodilov.weatherapp.ui.adapter.HourlyForecastAdapter
 import javax.inject.Inject
@@ -80,11 +81,12 @@ class MainFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.getWeatherInfo("Moscow")
-        viewModel.currentForecast.observe(viewLifecycleOwner) { currentForecast->
-            showCurrentForecast(currentForecast)
+        viewModel.location.observe(viewLifecycleOwner) { location->
+            showLocation(location)
         }
         viewModel.loading.observe(viewLifecycleOwner, ::toggleProgress)
         viewModel.hourlyForecastList.observe(viewLifecycleOwner) { hourlyForecastList ->
+            showCurrentForecast(hourlyForecastList.first())
             hourlyForecastAdapter?.submitList(hourlyForecastList)
         }
         viewModel.dailyForecastList.observe(viewLifecycleOwner) { dailyForecastList ->
@@ -93,10 +95,15 @@ class MainFragment : Fragment() {
         viewModel.weatherInfoErrorEvent.observe(viewLifecycleOwner) { showError() }
     }
 
-    private fun showCurrentForecast(currentForecast: CurrentForecast) {
+    private fun showLocation(location: Location) {
+        binding.topAppBar.apply {
+            title = location.cityName
+            subtitle = location.regionName
+        }
+    }
+
+    private fun showCurrentForecast(currentForecast: HourlyForecast) {
         binding.apply {
-            topAppBar.title = currentForecast.cityName
-            topAppBar.subtitle = currentForecast.regionName
             currentTemp.text = getTemperature(requireContext(),currentForecast.temp)
             condition.text = currentForecast.condition
             feelsLike.text = getTemperature(requireContext(), currentForecast.feelsLikeTemp)
