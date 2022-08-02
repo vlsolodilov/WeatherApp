@@ -14,6 +14,7 @@ class WeatherMapper @Inject constructor() {
         WeatherInfo(
             currentForecast = CurrentForecast(
                 cityName = weatherInfoDto.location.name,
+                regionName = weatherInfoDto.location.region,
                 temp = weatherInfoDto.current.temp_c,
                 condition = weatherInfoDto.current.condition.text,
                 iconCondition = weatherInfoDto.current.condition.icon,

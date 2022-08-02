@@ -2,9 +2,9 @@ package com.solodilov.weatherapp.ui
 
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.SearchView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -55,12 +55,23 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        setupToolbar()
         initViews()
         observeViewModel()
     }
 
+    private fun setupToolbar() {
+        setHasOptionsMenu(true)
+        (activity as AppCompatActivity).setSupportActionBar(binding.topAppBar)
+        (activity as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(false)
+    }
+
     private fun initViews() {
+        binding.swipeContainer.setColorSchemeResources(R.color.background_card)
+        binding.swipeContainer.setOnRefreshListener {
+            viewModel.getWeatherInfo("Moscow")
+            binding.swipeContainer.isRefreshing = false
+        }
         hourlyForecastAdapter = HourlyForecastAdapter()
         binding.hourlyForecastList.adapter = hourlyForecastAdapter
         dailyForecastAdapter = DailyForecastAdapter()
@@ -84,7 +95,8 @@ class MainFragment : Fragment() {
 
     private fun showCurrentForecast(currentForecast: CurrentForecast) {
         binding.apply {
-            cityName.text = currentForecast.cityName
+            topAppBar.title = currentForecast.cityName
+            topAppBar.subtitle = currentForecast.regionName
             currentTemp.text = getTemperature(requireContext(),currentForecast.temp)
             condition.text = currentForecast.condition
             feelsLike.text = getTemperature(requireContext(), currentForecast.feelsLikeTemp)
@@ -103,6 +115,22 @@ class MainFragment : Fragment() {
         Snackbar.make(binding.root, R.string.error, Snackbar.LENGTH_SHORT).show()
     }
 
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.search_menu, menu)
+        val searchView = menu.findItem(R.id.searchButton).actionView as SearchView
+        searchView.queryHint = getString(R.string.city)
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query != null)
+                    viewModel.getWeatherInfo(query)
+                searchView.onActionViewCollapsed()
+                return false
+            }
+            override fun onQueryTextChange(newText: String?): Boolean = false
+        })
+    }
 
     override fun onDestroyView() {
         _binding = null

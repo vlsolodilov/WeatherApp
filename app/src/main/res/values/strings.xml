@@ -7,4 +7,5 @@
     <string name="temp_format">%+.0f°</string>
     <string name="error">Ошибка</string>
     <string name="max_min_temp_format">%+.0f°/%+.0f°</string>
+    <string name="city">City</string>
 </resources>
