@@ -1,36 +1,28 @@
 package com.solodilov.weatherapp.presentation
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.solodilov.weatherapp.domain.entity.Location
-import com.solodilov.weatherapp.domain.entity.DailyForecast
-import com.solodilov.weatherapp.domain.entity.HourlyForecast
+import androidx.lifecycle.*
+import com.solodilov.weatherapp.domain.entity.WeatherInfo
 import com.solodilov.weatherapp.domain.usecase.GetWeatherInfoUseCase
+import com.solodilov.weatherapp.domain.usecase.RefreshWeatherInfoUseCase
 import com.solodilov.weatherapp.extension.LiveEvent
 import com.solodilov.weatherapp.extension.MutableLiveEvent
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
     private val getWeatherInfoUseCase: GetWeatherInfoUseCase,
+    private val refreshWeatherInfoUseCase: RefreshWeatherInfoUseCase,
 ) : ViewModel() {
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
-    private val _location = MutableLiveData<Location>()
-    val location: LiveData<Location> = _location
-
-    private val _dailyForecastList = MutableLiveData<List<DailyForecast>>()
-    val dailyForecastList: LiveData<List<DailyForecast>> = _dailyForecastList
-
-    private val _hourlyForecastList = MutableLiveData<List<HourlyForecast>>()
-    val hourlyForecastList: LiveData<List<HourlyForecast>> = _hourlyForecastList
+    private val _weatherInfo = MutableLiveData<WeatherInfo>()
+    val weatherInfo: LiveData<WeatherInfo> = _weatherInfo
 
     private val _weatherInfoErrorEvent = MutableLiveEvent()
     val weatherInfoErrorEvent: LiveEvent = _weatherInfoErrorEvent
@@ -39,30 +31,43 @@ class MainViewModel @Inject constructor(
         handleError(throwable)
     }
 
-    fun getWeatherInfo(cityName: String) {
+    init {
+        refresh(null)
+    }
+
+    fun getWeatherInfo() {
         viewModelScope.launch(exceptionHandler) {
             _loading.value = true
-            val weatherInfo =  getWeatherInfoUseCase(cityName)
-            _location.value = weatherInfo.location
-            _dailyForecastList.value = weatherInfo.dailyForecastList
-            _hourlyForecastList.value = getHourlyForecastSublist(weatherInfo.hourlyForecastList)
-
+            _weatherInfo.value = getFormattedWeatherInfo(getWeatherInfoUseCase().first())
             _loading.value = false
-            Log.d("TAG", "getWeatherInfo: $weatherInfo")
+            Log.d("TAG", "getWeatherInfo: ${weatherInfo.value}")
         }
     }
 
-    private fun getHourlyForecastSublist(hourlyForecastList: List<HourlyForecast>): List<HourlyForecast> {
+    fun refresh(location: String?) {
+        viewModelScope.launch(exceptionHandler) {
+            _loading.value = true
+            refreshWeatherInfoUseCase(location)
+            getWeatherInfo()
+            _loading.value = false
+            Log.d("TAG", "refresh: ${weatherInfo.value}")
+        }
+    }
+
+    private fun getFormattedWeatherInfo(weatherInfo: WeatherInfo): WeatherInfo {
         val currentTime = Date()
-        return hourlyForecastList.filter { hourlyForecast ->
+        val hourlyForecastSublist = weatherInfo.hourlyForecastList.filter { hourlyForecast ->
             hourlyForecast.time.after(currentTime)
         }.sortedBy { hourlyForecast ->
             hourlyForecast.time
         }.take(24)
+
+        return weatherInfo.copy(hourlyForecastList = hourlyForecastSublist)
     }
 
     private fun handleError(error: Throwable) {
         Log.d("TAG", "handleError: $error")
+        error.printStackTrace()
         _loading.value = false
         _weatherInfoErrorEvent()
     }

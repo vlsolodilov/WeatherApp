@@ -70,7 +70,7 @@ class MainFragment : Fragment() {
     private fun initViews() {
         binding.swipeContainer.setColorSchemeResources(R.color.background_card)
         binding.swipeContainer.setOnRefreshListener {
-            viewModel.getWeatherInfo("Moscow")
+            viewModel.refresh(null)
             binding.swipeContainer.isRefreshing = false
         }
         hourlyForecastAdapter = HourlyForecastAdapter()
@@ -80,17 +80,15 @@ class MainFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.getWeatherInfo("Moscow")
-        viewModel.location.observe(viewLifecycleOwner) { location->
-            showLocation(location)
-        }
+        viewModel.getWeatherInfo()
         viewModel.loading.observe(viewLifecycleOwner, ::toggleProgress)
-        viewModel.hourlyForecastList.observe(viewLifecycleOwner) { hourlyForecastList ->
-            showCurrentForecast(hourlyForecastList.first())
-            hourlyForecastAdapter?.submitList(hourlyForecastList)
-        }
-        viewModel.dailyForecastList.observe(viewLifecycleOwner) { dailyForecastList ->
-            dailyForecastAdapter?.submitList(dailyForecastList)
+        viewModel.weatherInfo.observe(viewLifecycleOwner) { weatherInfo ->
+            if (weatherInfo != null) {
+                showLocation(weatherInfo.location)
+                showCurrentForecast(weatherInfo.hourlyForecastList.first())
+                hourlyForecastAdapter?.submitList(weatherInfo.hourlyForecastList)
+                dailyForecastAdapter?.submitList(weatherInfo.dailyForecastList)
+            }
         }
         viewModel.weatherInfoErrorEvent.observe(viewLifecycleOwner) { showError() }
     }
@@ -102,16 +100,18 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun showCurrentForecast(currentForecast: HourlyForecast) {
-        binding.apply {
-            currentTemp.text = getTemperature(requireContext(),currentForecast.temp)
-            condition.text = currentForecast.condition
-            feelsLike.text = getTemperature(requireContext(), currentForecast.feelsLikeTemp)
+    private fun showCurrentForecast(currentForecast: HourlyForecast?) {
+        currentForecast?.let {
+            binding.apply {
+                currentTemp.text = getTemperature(requireContext(),currentForecast.temp)
+                condition.text = currentForecast.condition
+                feelsLike.text = getTemperature(requireContext(), currentForecast.feelsLikeTemp)
+            }
+            Glide
+                .with(this)
+                .load("https:${currentForecast.iconCondition}")
+                .into(binding.iconCondition)
         }
-        Glide
-            .with(this)
-            .load("https:${currentForecast.iconCondition}")
-            .into(binding.iconCondition)
     }
 
     private fun toggleProgress(visible: Boolean) {
@@ -122,7 +122,6 @@ class MainFragment : Fragment() {
         Snackbar.make(binding.root, R.string.error, Snackbar.LENGTH_SHORT).show()
     }
 
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.search_menu, menu)
@@ -130,8 +129,9 @@ class MainFragment : Fragment() {
         searchView.queryHint = getString(R.string.city)
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query != null)
-                    viewModel.getWeatherInfo(query)
+                if (query != null) {
+                    viewModel.refresh(query)
+                }
                 searchView.onActionViewCollapsed()
                 return false
             }

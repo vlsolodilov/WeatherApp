@@ -5,7 +5,7 @@
     <string name="max_min_temp">+25°/+20°</string>
     <string name="forecast_for_3_days">Forecast for 3 days</string>
     <string name="temp_format">%+.0f°</string>
-    <string name="error">Ошибка</string>
+    <string name="error">Check internet connection</string>
     <string name="max_min_temp_format">%+.0f°/%+.0f°</string>
     <string name="city">City</string>
 </resources>
