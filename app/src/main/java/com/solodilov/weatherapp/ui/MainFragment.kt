@@ -3,8 +3,6 @@ package com.solodilov.weatherapp.ui
 import android.content.Context
 import android.os.Bundle
 import android.view.*
-import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -56,18 +54,12 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupToolbar()
         initViews()
         observeViewModel()
     }
 
-    private fun setupToolbar() {
-        setHasOptionsMenu(true)
-        (activity as AppCompatActivity).setSupportActionBar(binding.topAppBar)
-        (activity as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(false)
-    }
-
     private fun initViews() {
+        binding.topAppBar.setNavigationOnClickListener { startLocationListFragment() }
         binding.swipeContainer.setColorSchemeResources(R.color.background_card)
         binding.swipeContainer.setOnRefreshListener {
             viewModel.refresh(null)
@@ -84,12 +76,14 @@ class MainFragment : Fragment() {
         viewModel.loading.observe(viewLifecycleOwner, ::toggleProgress)
         viewModel.weatherInfo.observe(viewLifecycleOwner) { weatherInfo ->
             if (weatherInfo != null) {
+                binding.weatherContainer.isVisible = true
                 showLocation(weatherInfo.location)
                 showCurrentForecast(weatherInfo.hourlyForecastList.first())
                 hourlyForecastAdapter?.submitList(weatherInfo.hourlyForecastList)
                 dailyForecastAdapter?.submitList(weatherInfo.dailyForecastList)
             }
         }
+        viewModel.selectLocationEvent.observe(viewLifecycleOwner) { startLocationListFragment() }
         viewModel.weatherInfoErrorEvent.observe(viewLifecycleOwner) { showError() }
     }
 
@@ -103,7 +97,7 @@ class MainFragment : Fragment() {
     private fun showCurrentForecast(currentForecast: HourlyForecast?) {
         currentForecast?.let {
             binding.apply {
-                currentTemp.text = getTemperature(requireContext(),currentForecast.temp)
+                currentTemp.text = getTemperature(requireContext(), currentForecast.temp)
                 condition.text = currentForecast.condition
                 feelsLike.text = getTemperature(requireContext(), currentForecast.feelsLikeTemp)
             }
@@ -114,29 +108,19 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun startLocationListFragment() {
+        parentFragmentManager.beginTransaction()
+            .add(R.id.mainContainer, LocationListFragment.newInstance())
+            .addToBackStack(LocationListFragment::class.java.name)
+            .commit()
+    }
+
     private fun toggleProgress(visible: Boolean) {
         binding.weatherInfoLoading.isVisible = visible
     }
 
     private fun showError() {
         Snackbar.make(binding.root, R.string.error, Snackbar.LENGTH_SHORT).show()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.search_menu, menu)
-        val searchView = menu.findItem(R.id.searchButton).actionView as SearchView
-        searchView.queryHint = getString(R.string.city)
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query != null) {
-                    viewModel.refresh(query)
-                }
-                searchView.onActionViewCollapsed()
-                return false
-            }
-            override fun onQueryTextChange(newText: String?): Boolean = false
-        })
     }
 
     override fun onDestroyView() {

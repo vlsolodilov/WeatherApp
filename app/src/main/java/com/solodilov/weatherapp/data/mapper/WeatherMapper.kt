@@ -1,15 +1,9 @@
 package com.solodilov.weatherapp.data.mapper
 
 import com.solodilov.weatherapp.data.model.WeatherInfoDto
-import com.solodilov.weatherapp.domain.entity.Location
-import com.solodilov.weatherapp.domain.entity.DailyForecast
-import com.solodilov.weatherapp.domain.entity.HourlyForecast
-import com.solodilov.weatherapp.domain.entity.WeatherInfo
 import com.solodilov.weatherapp.Converter
-import com.solodilov.weatherapp.data.datasource.database.entity.DailyForecastDb
-import com.solodilov.weatherapp.data.datasource.database.entity.HourlyForecastDb
-import com.solodilov.weatherapp.data.datasource.database.entity.LocationDb
-import com.solodilov.weatherapp.data.datasource.database.entity.WeatherInfoDb
+import com.solodilov.weatherapp.data.datasource.database.entity.*
+import com.solodilov.weatherapp.domain.entity.*
 import javax.inject.Inject
 
 class WeatherMapper @Inject constructor() {
@@ -17,8 +11,11 @@ class WeatherMapper @Inject constructor() {
     fun mapWeatherInfoDbToWeatherInfo(weatherInfoDb: WeatherInfoDb): WeatherInfo =
         WeatherInfo(
             location = Location(
+                id = weatherInfoDb.locationDb.id,
                 cityName = weatherInfoDb.locationDb.cityName,
                 regionName = weatherInfoDb.locationDb.regionName,
+                latitude = weatherInfoDb.locationDb.latitude,
+                longitude = weatherInfoDb.locationDb.longitude
             ),
             dailyForecastList = mapWeatherInfoDbToDailyForecastList(weatherInfoDb),
             hourlyForecastList = mapWeatherInfoDbToHourlyForecastList(weatherInfoDb)
@@ -36,13 +33,13 @@ class WeatherMapper @Inject constructor() {
 
     private fun mapWeatherInfoDbToHourlyForecastList(weatherInfoDb: WeatherInfoDb): List<HourlyForecast> =
         weatherInfoDb.hourlyForecastListDb.map { forecastHour ->
-                HourlyForecast(
-                    time = forecastHour.time,
-                    temp = forecastHour.temp,
-                    condition = forecastHour.condition,
-                    iconCondition = forecastHour.iconCondition,
-                    feelsLikeTemp = forecastHour.feelsLikeTemp
-                )
+            HourlyForecast(
+                time = forecastHour.time,
+                temp = forecastHour.temp,
+                condition = forecastHour.condition,
+                iconCondition = forecastHour.iconCondition,
+                feelsLikeTemp = forecastHour.feelsLikeTemp
+            )
 
         }
 
@@ -51,6 +48,8 @@ class WeatherMapper @Inject constructor() {
             locationDb = LocationDb(
                 cityName = weatherInfoDto.location.name,
                 regionName = weatherInfoDto.location.region,
+                latitude = weatherInfoDto.location.lat,
+                longitude = weatherInfoDto.location.lon,
             ),
             dailyForecastListDb = mapWeatherInfoDtoToDailyForecastListDb(weatherInfoDto),
             hourlyForecastListDb = mapWeatherInfoDtoToHourlyForecastListDb(weatherInfoDto)
@@ -78,4 +77,22 @@ class WeatherMapper @Inject constructor() {
                 )
             }
         }
+
+    fun mapWeatherInfoDtoToLocationDb(weatherInfoDto: WeatherInfoDto): LocationWithTimeDb =
+        LocationWithTimeDb(
+            cityName = weatherInfoDto.location.name,
+            regionName = weatherInfoDto.location.region,
+            latitude = weatherInfoDto.location.lat,
+            longitude = weatherInfoDto.location.lon,
+            time = weatherInfoDto.location.localtime_epoch
+        )
+
+    fun mapLocationDbToLocation(locationWithTimeDb: LocationWithTimeDb): Location =
+        Location(
+            id = locationWithTimeDb.id,
+            cityName = locationWithTimeDb.cityName,
+            regionName = locationWithTimeDb.regionName,
+            latitude = locationWithTimeDb.latitude,
+            longitude = locationWithTimeDb.longitude
+        )
 }

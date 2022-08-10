@@ -1,6 +1,7 @@
 package com.solodilov.weatherapp.di
 
 import android.app.Application
+import com.solodilov.weatherapp.ui.LocationListFragment
 import com.solodilov.weatherapp.ui.MainActivity
 import com.solodilov.weatherapp.ui.MainFragment
 import dagger.BindsInstance
@@ -17,6 +18,7 @@ interface ApplicationComponent {
 
 	fun inject(activity: MainActivity)
 	fun inject(fragment: MainFragment)
+	fun inject(fragment: LocationListFragment)
 
 	@Component.Factory
 	interface Factory {

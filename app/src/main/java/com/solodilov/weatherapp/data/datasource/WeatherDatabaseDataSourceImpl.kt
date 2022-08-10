@@ -12,7 +12,7 @@ class WeatherDatabaseDataSourceImpl @Inject constructor(
     override suspend fun insertWeatherInfoDb(weatherInfoDb: WeatherInfoDb) =
         dao.insertWeatherInfoDb(weatherInfoDb)
 
-    override fun getWeatherInfoDb(): Flow<WeatherInfoDb> =
+    override fun getWeatherInfoDb(): Flow<WeatherInfoDb?> =
         dao.getWeatherInfoDb()
 
 }

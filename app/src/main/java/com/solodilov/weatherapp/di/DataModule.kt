@@ -1,10 +1,8 @@
 package com.solodilov.weatherapp.di
 
 import android.app.Application
-import com.solodilov.weatherapp.data.datasource.WeatherDataSource
-import com.solodilov.weatherapp.data.datasource.WeatherDataSourceImpl
-import com.solodilov.weatherapp.data.datasource.WeatherDatabaseDataSource
-import com.solodilov.weatherapp.data.datasource.WeatherDatabaseDataSourceImpl
+import com.solodilov.weatherapp.data.datasource.*
+import com.solodilov.weatherapp.data.datasource.database.LocationDao
 import com.solodilov.weatherapp.data.datasource.database.WeatherDao
 import com.solodilov.weatherapp.data.datasource.database.WeatherDatabase
 import com.solodilov.weatherapp.data.repository.WeatherRepositoryImpl
@@ -16,6 +14,10 @@ import javax.inject.Singleton
 
 @Module
 interface DataModule {
+
+	@Singleton
+	@Binds
+	fun bindLocationDataSource(impl: LocationDataSourceImpl): LocationDataSource
 
 	@Singleton
 	@Binds
@@ -41,6 +43,12 @@ interface DataModule {
 		@Provides
 		fun provideWeatherDao(weatherDatabase: WeatherDatabase): WeatherDao {
 			return weatherDatabase.weatherDao()
+		}
+
+		@Singleton
+		@Provides
+		fun provideLocationDao(weatherDatabase: WeatherDatabase): LocationDao {
+			return weatherDatabase.locationDao()
 		}
 	}
 }

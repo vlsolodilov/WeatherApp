@@ -8,10 +8,15 @@ import androidx.room.TypeConverters
 import com.solodilov.weatherapp.data.datasource.database.entity.DailyForecastDb
 import com.solodilov.weatherapp.data.datasource.database.entity.HourlyForecastDb
 import com.solodilov.weatherapp.data.datasource.database.entity.LocationDb
-import java.util.*
+import com.solodilov.weatherapp.data.datasource.database.entity.LocationWithTimeDb
 
 @Database(
-    entities = [LocationDb::class, HourlyForecastDb::class, DailyForecastDb::class],
+    entities = [
+        LocationDb::class,
+        HourlyForecastDb::class,
+        DailyForecastDb::class,
+        LocationWithTimeDb::class,
+    ],
     version = 1,
     exportSchema = false
 )
@@ -20,6 +25,7 @@ import java.util.*
 )
 abstract class WeatherDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
+    abstract fun locationDao(): LocationDao
 
     companion object {
 

@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface WeatherDatabaseDataSource {
 
     suspend fun insertWeatherInfoDb(weatherInfoDb: WeatherInfoDb)
-    fun getWeatherInfoDb(): Flow<WeatherInfoDb>
+    fun getWeatherInfoDb(): Flow<WeatherInfoDb?>
 }

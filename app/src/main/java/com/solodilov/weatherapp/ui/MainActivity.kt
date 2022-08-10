@@ -17,4 +17,13 @@ class MainActivity : AppCompatActivity() {
                 .commit()
         }
     }
+
+    override fun onBackPressed() {
+        val fragment = supportFragmentManager.findFragmentById(R.id.mainContainer)
+        if (fragment is MainFragment) {
+            finishAffinity()
+        } else {
+            supportFragmentManager.popBackStack()
+        }
+    }
 }

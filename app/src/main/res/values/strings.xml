@@ -8,4 +8,9 @@
     <string name="error">Check internet connection</string>
     <string name="max_min_temp_format">%+.0f°/%+.0f°</string>
     <string name="city">City</string>
+    <string name="permission_is_denied">No location permission</string>
+    <string name="last_locations">Last locations</string>
+    <string name="current_location">Current location</string>
+    <string name="clear_location_list">Clear location list</string>
+    <string name="formatted_location">%.2f,%.2f</string>
 </resources>
